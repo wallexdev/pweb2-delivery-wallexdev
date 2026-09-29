@@ -13,7 +13,7 @@ async function requisicao(method, caminho, opcoes = {}) {
   let json = null;
   try {
     json = texto ? JSON.parse(texto) : null;
-  } catch (_) {}
+  } catch (_) { }
 
   return { status: resposta.status, texto, json };
 }
@@ -149,7 +149,7 @@ async function main() {
   });
 
   console.log(`\nResultado: ${passou}/${total} testes passaram.`);
-  process.exit(passou === total ? 0 : 1);
+  process.exitCode = passou === total ? 0 : 1;
 }
 
 main().catch((erro) => {
