@@ -1,64 +1,57 @@
-import { RegraNegocioError } from '../utils/RegraNegocioError.js';
+import { RegraNegocioError } from "../utils/RegraNegocioError.js";
 
 class MotoristasService {
-    constructor(motoristasRepository, entregasRepository) {
-        this.motoristasRepository = motoristasRepository;
-        this.entregasRepository = entregasRepository;
+  constructor(motoristasRepository, entregasRepository) {
+    this.motoristasRepository = motoristasRepository;
+    this.entregasRepository = entregasRepository;
+  }
+
+  listar() {
+    return this.motoristasRepository.listarTodos();
+  }
+
+  buscar(id) {
+    const motorista = this.motoristasRepository.buscarPorId(id);
+
+    if (!motorista) {
+      throw new RegraNegocioError(404, "motorista não encontrado");
     }
 
-    listar() {
-        return this.motoristasRepository.listarTodos();
+    return motorista;
+  }
+
+  criar({ nome, cpf, placaVeiculo }) {
+    if (!nome || !cpf) {
+      throw new RegraNegocioError(400, "nome e cpf são obrigatórios");
     }
 
-    buscar(id) {
-        const motorista = this.motoristasRepository.buscarPorId(id);
+    const motoristaExistente = this.motoristasRepository.buscarPorCpf(cpf);
 
-        if (!motorista) {
-            throw new RegraNegocioError(404, 'motorista não encontrado');
-        }
-
-        return motorista;
+    if (motoristaExistente) {
+      throw new RegraNegocioError(409, "cpf já cadastrado");
     }
 
-    criar({ nome, cpf, placaVeiculo }) {
-        if (!nome || !cpf) {
-            throw new RegraNegocioError(
-                400,
-                'nome e cpf são obrigatórios'
-            );
-        }
+    return this.motoristasRepository.criar({
+      nome,
+      cpf,
+      placaVeiculo,
+      status: "ATIVO",
+    });
+  }
 
-        const motoristaExistente =
-            this.motoristasRepository.buscarPorCpf(cpf);
-
-        if (motoristaExistente) {
-            throw new RegraNegocioError(
-                409,
-                'cpf já cadastrado'
-            );
-        }
-
-        return this.motoristasRepository.criar({
-            nome,
-            cpf,
-            placaVeiculo,
-            status: 'ATIVO'
-        });
-    }
-
-    listarEntregas(id, status) {
+  listarEntregas(id, status) {
     this.buscar(id);
 
     const filtros = {
-        motoristaId: id
+      motoristaId: id,
     };
 
     if (status) {
-        filtros.status = status;
+      filtros.status = status;
     }
 
     return this.entregasRepository.listarTodos(filtros);
-}
+  }
 }
 
 export default MotoristasService;

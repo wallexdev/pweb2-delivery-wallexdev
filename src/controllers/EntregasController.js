@@ -82,7 +82,7 @@ export class EntregasController {
   erro(res, erro) {
     const status = erro.status || 500;
     res.status(status).json({
-      erro: erro.message || 'erro interno'
+      erro: erro.message || "erro interno",
     });
   }
 }

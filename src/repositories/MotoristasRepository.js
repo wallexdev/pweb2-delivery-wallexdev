@@ -1,27 +1,28 @@
-const TABELA = 'motoristas';
+const TABELA = "motoristas";
 
 class MotoristasRepository {
-    constructor(database) {
-        this.database = database;
-    }
+  constructor(database) {
+    this.database = database;
+  }
 
-    listarTodos() {
-        return this.database.listar(TABELA);
-    }
+  listarTodos() {
+    return this.database.listar(TABELA);
+  }
 
-    buscarPorId(id) {
-        return this.database.porId(TABELA, id);
-    }
+  buscarPorId(id) {
+    return this.database.porId(TABELA, id) || null;
+  }
 
-    buscarPorCpf(cpf) {
-        return this.database
-            .listar(TABELA)
-            .find((motorista) => motorista.cpf === cpf);
-    }
+  buscarPorCpf(cpf) {
+    return (
+      this.database.listar(TABELA).find((motorista) => motorista.cpf === cpf) ||
+      null
+    );
+  }
 
-    criar(dados) {
-        return this.database.adicionar(TABELA, dados);
-    }
+  criar(dados) {
+    return this.database.adicionar(TABELA, dados);
+  }
 }
 
 export default MotoristasRepository;

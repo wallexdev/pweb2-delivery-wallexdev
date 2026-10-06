@@ -1,4 +1,4 @@
-const TABELA = 'entregas';
+const TABELA = "entregas";
 
 export class EntregasRepository {
   constructor(database) {
@@ -9,30 +9,22 @@ export class EntregasRepository {
     let entregas = this.database.listar(TABELA);
 
     if (filtros.status) {
-        entregas = entregas.filter(
-            (entrega) => entrega.status === filtros.status
-        );
+      entregas = entregas.filter(
+        (entrega) => entrega.status === filtros.status,
+      );
     }
 
     if (filtros.motoristaId !== undefined) {
-        entregas = entregas.filter(
-            (entrega) => entrega.motoristaId === filtros.motoristaId
-        );
+      entregas = entregas.filter(
+        (entrega) => entrega.motoristaId === filtros.motoristaId,
+      );
     }
 
     return entregas;
-}
-
-  buscarPorId(id) {
-    return this.database.porId(TABELA, id);
   }
 
-  buscarPorChave(descricao, origem, destino) {
-    return this.database.listar(TABELA).filter((entrega) =>
-      entrega.descricao === descricao &&
-      entrega.origem === origem &&
-      entrega.destino === destino
-    );
+  buscarPorId(id) {
+    return this.database.porId(TABELA, id) || null;
   }
 
   criar(dados) {

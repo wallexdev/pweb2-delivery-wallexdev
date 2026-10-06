@@ -16,10 +16,11 @@ export class EntregasService {
   }
 
   listar(status) {
-    const entregas = this.repository.listarTodas();
+    if (status) {
+      return this.repository.listarTodos({ status });
+    }
 
-    if (!status) return entregas;
-    return entregas.filter((entrega) => entrega.status === status);
+    return this.repository.listarTodos();
   }
 
   buscar(id) {
@@ -48,10 +49,15 @@ export class EntregasService {
       throw new RegraNegocioError(400, "origem e destino não podem ser iguais");
     }
 
-    const parecida = this.repository.buscarPorChave(descricao, origem, destino);
+    const entregas = this.repository.listarTodos();
 
-    const existeAtiva = parecida.some(
-      (item) => item.status !== "ENTREGUE" && item.status !== "CANCELADA",
+    const existeAtiva = entregas.some(
+      (item) =>
+        item.descricao === descricao &&
+        item.origem === origem &&
+        item.destino === destino &&
+        item.status !== "ENTREGUE" &&
+        item.status !== "CANCELADA",
     );
 
     if (existeAtiva) {
