@@ -5,9 +5,23 @@ export class EntregasRepository {
     this.database = database;
   }
 
-  listarTodas() {
-    return this.database.listar(TABELA);
-  }
+  listarTodos(filtros = {}) {
+    let entregas = this.database.listar(TABELA);
+
+    if (filtros.status) {
+        entregas = entregas.filter(
+            (entrega) => entrega.status === filtros.status
+        );
+    }
+
+    if (filtros.motoristaId !== undefined) {
+        entregas = entregas.filter(
+            (entrega) => entrega.motoristaId === filtros.motoristaId
+        );
+    }
+
+    return entregas;
+}
 
   buscarPorId(id) {
     return this.database.porId(TABELA, id);

@@ -2,10 +2,12 @@ export class Database {
   constructor() {
     this.tabelas = {
       entregas: [],
+      motoristas: [],
     };
 
     this.proximosIds = {
       entregas: 1,
+      motoristas: 1,
     };
   }
 
