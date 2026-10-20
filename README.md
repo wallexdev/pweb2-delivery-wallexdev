@@ -1,16 +1,64 @@
 # Delivery Tracker — Programação Web II
 
-> **Programação Web II — IFAL/Maceió.** Este projeto implementa a **Delivery Tracker API** utilizando arquitetura em camadas. A aplicação separa as responsabilidades entre Controllers, Services, Repositories e Database, mantendo as regras de negócio nos Services e os dados em memória.
+**Programação Web II — IFAL/Maceió**
 
-## Como usar este repositório
+Este projeto implementa a Delivery Tracker API utilizando Node.js, Express, Prisma ORM e SQLite.
 
-1. Instale as dependências:
+A aplicação utiliza arquitetura em camadas, separando as responsabilidades entre Controllers, Services e Repositories.
+
+As regras de negócio ficam concentradas nos Services, enquanto os Repositories utilizam o Prisma para realizar operações no banco de dados SQLite.
+
+## Tecnologias utilizadas
+
+- Node.js
+- Express
+- JavaScript
+- Prisma ORM 6
+- SQLite
+
+## Como executar o projeto
+
+### 1. Instalar as dependências
 
 ```bash
 npm install
 ```
 
-2. Inicie a aplicação:
+### 2. Configurar o ambiente
+
+No Linux/macOS:
+
+```bash
+cp .env.example .env
+```
+
+No Windows (PowerShell):
+
+```powershell
+Copy-Item .env.example .env
+```
+
+O arquivo `.env` deve conter:
+
+```env
+DATABASE_URL="file:./dev.db"
+```
+
+### 3. Criar as tabelas
+
+Execute as migrations do Prisma:
+
+```bash
+npx prisma migrate deploy
+```
+
+### 4. Gerar o Prisma Client
+
+```bash
+npx prisma generate
+```
+
+### 5. Iniciar o servidor
 
 ```bash
 npm start
@@ -18,28 +66,35 @@ npm start
 
 A API estará disponível em:
 
-```text
 http://localhost:3000
-```
-
-3. Para executar o autograder, deixe o servidor rodando e abra outro terminal.
-
-### PowerShell (Windows)
-
-```powershell
-$env:BASE_URL="http://localhost:3000"
-node autograder/check.mjs
-```
-
-### Linux/macOS
-
-```bash
-BASE_URL=http://localhost:3000 node autograder/check.mjs
-```
-
-O projeto possui também um workflow do GitHub Actions para executar as verificações automaticamente após um `git push`.
 
 ## Arquitetura do projeto
+
+O projeto utiliza uma arquitetura em camadas:
+
+```text
+Requisição HTTP
+       |
+       v
+    Routes
+       |
+       v
+  Controllers
+       |
+       v
+    Services
+       |
+       v
+  Repositories
+       |
+       v
+  Prisma Client
+       |
+       v
+     SQLite
+```
+
+### Organização das pastas
 
 ```text
 src/
@@ -49,50 +104,101 @@ src/
 ├── database/
 ├── routes/
 └── utils/
+
+prisma/
+├── migrations/
+└── schema.prisma
+
+index.js
+package.json
+prisma.config.ts
+.env.example
 ```
 
-- **Controllers:** recebem as requisições HTTP e retornam as respostas.
-- **Services:** concentram as regras de negócio.
-- **Repositories:** cuidam do acesso aos dados e seguem os contratos definidos.
-- **Database:** mantém a persistência simulada em memória.
-- **Routes:** definem as rotas da API.
-- **Utils:** contém recursos auxiliares.
-- **index.js:** funciona como ponto de composição das dependências da aplicação.
+### Responsabilidades
 
-Os Services recebem os Repositories por injeção de dependência e não criam diretamente suas implementações.
+**Controllers:** recebem as requisições HTTP e retornam as respostas.
 
-### Composição das dependências
+**Services:** implementam as regras de negócio da aplicação.
 
-```text
-Database
-   │
-   ├── EntregasRepository
-   │          │
-   │          ├──────────────┐
-   │          │              │
-   │   EntregasService   MotoristasService
-   │          │              │
-   │   EntregasController MotoristasController
-   │          │              │
-   │   EntregasRoutes     MotoristasRoutes
-   │
-   └── MotoristasRepository
-              │
-              ├──────────────┘
+**Repositories:** realizam as operações de acesso aos dados utilizando Prisma.
+
+**Prisma Client:** permite consultar e modificar os registros do banco.
+
+**SQLite:** armazena os dados de forma persistente.
+
+**Routes:** definem os endpoints disponíveis na API.
+
+**Utils:** contém recursos auxiliares, como o tratamento de erros.
+
+**index.js:** configura o Express e realiza a injeção de dependências.
+
+A pasta `src/database` contém a implementação antiga de armazenamento em memória, mantida como referência da versão anterior. A aplicação atual utiliza o Prisma.
+
+## Banco de dados
+
+O projeto utiliza SQLite com Prisma ORM.
+
+O banco possui três modelos principais:
+
+### Motorista
+
+Armazena as informações dos motoristas:
+
+- ID
+- Nome
+- CPF
+- Placa do veículo
+- Status
+
+O CPF possui uma restrição de unicidade.
+
+### Entrega
+
+Armazena os dados das entregas:
+
+- ID
+- Descrição
+- Origem
+- Destino
+- Status
+- ID do motorista
+
+Uma entrega pode estar associada a um motorista.
+
+### Evento
+
+Armazena o histórico das entregas:
+
+- ID
+- Data
+- Descrição
+- ID da entrega
+
+Cada entrega pode possuir vários eventos.
+
+### Visualizar o banco de dados
+
+Para abrir o Prisma Studio:
+
+```bash
+npx prisma studio
 ```
 
-A composição é realizada no `index.js`. Os Services dependem dos contratos dos Repositories, permitindo substituir as implementações concretas por outras implementações ou Mocks.
+O Prisma Studio permite visualizar os registros das tabelas por meio de uma interface gráfica.
 
-## Contratos de Repository
+## Contratos dos Repositories
 
-O projeto possui os contratos:
+O projeto mantém os contratos:
 
 ```text
 IEntregasRepository
 IMotoristasRepository
 ```
 
-O contrato de entregas define as operações:
+### EntregasRepository
+
+Operações:
 
 ```text
 listarTodos(filtros?)
@@ -101,7 +207,9 @@ criar(dados)
 atualizar(id, dados)
 ```
 
-O contrato de motoristas define:
+### MotoristasRepository
+
+Operações:
 
 ```text
 listarTodos()
@@ -109,6 +217,8 @@ buscarPorId(id)
 buscarPorCpf(cpf)
 criar(dados)
 ```
+
+Os métodos de acesso ao banco utilizam operações assíncronas com `async/await`.
 
 ## Endpoints
 
@@ -168,7 +278,7 @@ GET /api/entregas/:id
 PATCH /api/entregas/:id/avancar
 ```
 
-O fluxo de uma entrega é:
+Fluxo:
 
 ```text
 CRIADA → EM_TRANSITO → ENTREGUE
@@ -200,7 +310,7 @@ Exemplo:
 }
 ```
 
-A atribuição só pode ser realizada quando a entrega está com status `CRIADA` e o motorista está `ATIVO`.
+A atribuição só é permitida quando a entrega está com status `CRIADA` e o motorista está `ATIVO`.
 
 ## Motoristas
 
@@ -250,50 +360,82 @@ GET /api/motoristas/:id/entregas?status=CRIADA
 
 ### Entregas
 
-- `descricao`, `origem` e `destino` são obrigatórios.
+- Descrição, origem e destino são obrigatórios.
 - A origem deve ser diferente do destino.
 - Toda entrega começa com status `CRIADA`.
-- Uma entrega ativa não pode ser duplicada com a mesma descrição, origem e destino.
+- Uma entrega ativa não pode ser duplicada.
 - O avanço segue `CRIADA → EM_TRANSITO → ENTREGUE`.
-- Uma entrega pode ser cancelada enquanto não estiver `ENTREGUE` ou `CANCELADA`.
-- As alterações realizadas na entrega são registradas no histórico.
+- Uma entrega não pode ser cancelada após ser entregue ou cancelada.
+- As alterações são registradas no histórico.
 
 ### Motoristas
 
-- `nome` e `cpf` são obrigatórios.
+- Nome e CPF são obrigatórios.
 - O CPF deve ser único.
-- `placaVeiculo` é opcional.
-- Todo motorista é criado com status `ATIVO`.
+- A placa do veículo é opcional.
+- Todo motorista começa com status `ATIVO`.
 - Uma entrega só pode receber motorista enquanto estiver `CRIADA`.
-- Um motorista `INATIVO` não pode ser atribuído a uma entrega.
-- A atribuição do motorista é registrada no histórico da entrega.
+- Motoristas inativos não podem ser atribuídos.
+- A atribuição é registrada no histórico.
 
 ## Códigos de resposta
 
 | Código | Descrição |
 |:---:|---|
-| `200` | Operação realizada com sucesso |
-| `201` | Recurso criado com sucesso |
-| `400` | Dados de entrada inválidos |
-| `404` | Recurso não encontrado |
-| `409` | Conflito, como CPF duplicado ou entrega ativa duplicada |
-| `422` | Regra de negócio ou transição inválida |
+| 200 | Operação realizada com sucesso |
+| 201 | Recurso criado com sucesso |
+| 400 | Dados de entrada inválidos |
+| 404 | Recurso não encontrado |
+| 409 | Conflito ou registro duplicado |
+| 422 | Regra de negócio ou transição inválida |
 
-## Testes
+## Testes automatizados
 
-O projeto possui um autograder para verificar o funcionamento das rotas da Delivery Tracker API.
+O projeto possui um autograder que verifica as funcionalidades da API.
 
-No PowerShell:
-
-```powershell
-$env:BASE_URL="http://localhost:3000"
-node autograder/check.mjs
-```
-
-No Linux/macOS:
+Primeiro, inicie o servidor:
 
 ```bash
-BASE_URL=http://localhost:3000 node autograder/check.mjs
+npm start
 ```
 
-Os dados da aplicação são armazenados em memória e são perdidos quando o servidor é encerrado.
+Em outro terminal, execute:
+
+```bash
+npm run check
+```
+
+O autograder verifica:
+
+- Cadastro de entregas.
+- Validação dos campos obrigatórios.
+- Bloqueio de entregas duplicadas.
+- Consulta de entregas.
+- Mudanças de status.
+- Cancelamento.
+- Histórico.
+- Filtros.
+- Cadastro de motoristas.
+- Bloqueio de CPF duplicado.
+- Atribuição de motoristas.
+- Consulta das entregas de um motorista.
+
+### Resultado dos testes locais
+
+Após a migração para Prisma + SQLite, o projeto obteve:
+
+```text
+NOTA: 122/122 (100%)
+```
+
+O resultado foi obtido executando o autograder localmente.
+
+## Persistência dos dados
+
+Na versão anterior, os dados eram armazenados em memória e desapareciam quando o servidor era encerrado.
+
+Na versão atual, os registros são armazenados no SQLite.
+
+Isso permite que entregas, motoristas e históricos permaneçam salvos mesmo após reiniciar a aplicação.
+
+O arquivo do banco de dados não é enviado ao GitHub. Ele é criado localmente por meio das migrations do Prisma.

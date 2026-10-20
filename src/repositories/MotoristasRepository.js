@@ -1,28 +1,33 @@
-const TABELA = "motoristas";
-
 class MotoristasRepository {
-  constructor(database) {
-    this.database = database;
+  constructor(prisma) {
+    this.prisma = prisma;
   }
 
-  listarTodos() {
-    return this.database.listar(TABELA);
+  async listarTodos() {
+    return await this.prisma.motorista.findMany();
   }
 
-  buscarPorId(id) {
-    return this.database.porId(TABELA, id) || null;
+  async buscarPorId(id) {
+    return await this.prisma.motorista.findUnique({
+      where: {
+        id: id,
+      },
+    });
   }
 
-  buscarPorCpf(cpf) {
-    return (
-      this.database.listar(TABELA).find((motorista) => motorista.cpf === cpf) ||
-      null
-    );
+  async buscarPorCpf(cpf) {
+    return await this.prisma.motorista.findUnique({
+      where: {
+        cpf: cpf,
+      },
+    });
   }
 
-  criar(dados) {
-    return this.database.adicionar(TABELA, dados);
-  }
+  async criar(dados) {
+  return await this.prisma.motorista.create({
+    data: dados
+  });
+}
 }
 
 export default MotoristasRepository;

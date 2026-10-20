@@ -3,11 +3,7 @@
   "version": "1.0.0",
   "description": "Delivery Tracker - arquitetura em camadas",
   "type": "module",
-  "scripts": {
-    "start": "node index.js",
-    "check": "node autograder/check.mjs"
-  },
-  "dependencies": {
-    "express": "^4.21.2"
-  }
+  "scripts": {"start": "node index.js", "check": "node autograder/check.mjs"},
+  "dependencies": {"@prisma/client": "6.19.3", "express": "^4.21.2", "dotenv": "^16.4.5"},
+  "devDependencies": {"prisma": "6.19.3"}
 }

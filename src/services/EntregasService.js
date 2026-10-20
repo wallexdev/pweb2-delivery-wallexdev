@@ -2,7 +2,7 @@ import { RegraNegocioError } from "../utils/RegraNegocioError.js";
 
 const proximoStatus = {
   CRIADA: "EM_TRANSITO",
-  EM_TRANSITO: "ENTREGUE",
+  EM_TRANSITO: "ENTREGUE"
 };
 
 function dataAgora() {
@@ -15,16 +15,16 @@ export class EntregasService {
     this.motoristasRepository = motoristasRepository;
   }
 
-  listar(status) {
+  async listar(status) {
     if (status) {
-      return this.repository.listarTodos({ status });
+      return await this.repository.listarTodos({ status });
     }
 
-    return this.repository.listarTodos();
+    return await this.repository.listarTodos();
   }
 
-  buscar(id) {
-    const entrega = this.repository.buscarPorId(id);
+  async buscar(id) {
+    const entrega = await this.repository.buscarPorId(id);
 
     if (!entrega) {
       throw new RegraNegocioError(404, "entrega não encontrada");
@@ -33,23 +33,27 @@ export class EntregasService {
     return entrega;
   }
 
-  historico(id) {
-    return this.buscar(id).historico;
+  async historico(id) {
+    const entrega = await this.buscar(id);
+    return entrega.historico;
   }
 
-  criar({ descricao, origem, destino }) {
+  async criar({ descricao, origem, destino }) {
     if (!descricao || !origem || !destino) {
       throw new RegraNegocioError(
         400,
-        "descricao, origem e destino são obrigatórios",
+        "descricao, origem e destino são obrigatórios"
       );
     }
 
     if (origem === destino) {
-      throw new RegraNegocioError(400, "origem e destino não podem ser iguais");
+      throw new RegraNegocioError(
+        400,
+        "origem e destino não podem ser iguais"
+      );
     }
 
-    const entregas = this.repository.listarTodos();
+    const entregas = await this.repository.listarTodos();
 
     const existeAtiva = entregas.some(
       (item) =>
@@ -57,17 +61,17 @@ export class EntregasService {
         item.origem === origem &&
         item.destino === destino &&
         item.status !== "ENTREGUE" &&
-        item.status !== "CANCELADA",
+        item.status !== "CANCELADA"
     );
 
     if (existeAtiva) {
       throw new RegraNegocioError(
         409,
-        "já existe uma entrega ativa com a mesma descrição, origem e destino",
+        "já existe uma entrega ativa com a mesma descrição, origem e destino"
       );
     }
 
-    return this.repository.criar({
+    return await this.repository.criar({
       descricao,
       origem,
       destino,
@@ -76,20 +80,21 @@ export class EntregasService {
       historico: [
         {
           data: dataAgora(),
-          descricao: "Entrega criada",
-        },
-      ],
+          descricao: "Entrega criada"
+        }
+      ]
     });
   }
 
-  avancar(id) {
-    const entrega = this.buscar(id);
+  async avancar(id) {
+    const entrega = await this.buscar(id);
+
     const novoStatus = proximoStatus[entrega.status];
 
     if (!novoStatus) {
       throw new RegraNegocioError(
         422,
-        `não é possível avançar uma entrega com status ${entrega.status}`,
+        `não é possível avançar uma entrega com status ${entrega.status}`
       );
     }
 
@@ -97,23 +102,26 @@ export class EntregasService {
       ...entrega.historico,
       {
         data: dataAgora(),
-        descricao: `Status alterado para ${novoStatus}`,
-      },
+        descricao: `Status alterado para ${novoStatus}`
+      }
     ];
 
-    return this.repository.atualizar(id, {
+    return await this.repository.atualizar(id, {
       status: novoStatus,
-      historico,
+      historico
     });
   }
 
-  cancelar(id) {
-    const entrega = this.buscar(id);
+  async cancelar(id) {
+    const entrega = await this.buscar(id);
 
-    if (entrega.status === "ENTREGUE" || entrega.status === "CANCELADA") {
+    if (
+      entrega.status === "ENTREGUE" ||
+      entrega.status === "CANCELADA"
+    ) {
       throw new RegraNegocioError(
         422,
-        `não é possível cancelar uma entrega ${entrega.status}`,
+        `não é possível cancelar uma entrega ${entrega.status}`
       );
     }
 
@@ -121,20 +129,21 @@ export class EntregasService {
       ...entrega.historico,
       {
         data: dataAgora(),
-        descricao: "Entrega cancelada",
-      },
+        descricao: "Entrega cancelada"
+      }
     ];
 
-    return this.repository.atualizar(id, {
+    return await this.repository.atualizar(id, {
       status: "CANCELADA",
-      historico,
+      historico
     });
   }
 
-  atribuir(id, motoristaId) {
-    const entrega = this.buscar(id);
+  async atribuir(id, motoristaId) {
+    const entrega = await this.buscar(id);
 
-    const motorista = this.motoristasRepository.buscarPorId(motoristaId);
+    const motorista =
+      await this.motoristasRepository.buscarPorId(motoristaId);
 
     if (!motorista) {
       throw new RegraNegocioError(404, "motorista não encontrado");
@@ -143,25 +152,28 @@ export class EntregasService {
     if (entrega.status !== "CRIADA") {
       throw new RegraNegocioError(
         422,
-        "motorista só pode ser atribuído a uma entrega CRIADA",
+        "motorista só pode ser atribuído a uma entrega CRIADA"
       );
     }
 
     if (motorista.status !== "ATIVO") {
-      throw new RegraNegocioError(422, "motorista precisa estar ATIVO");
+      throw new RegraNegocioError(
+        422,
+        "motorista precisa estar ATIVO"
+      );
     }
 
     const historico = [
       ...entrega.historico,
       {
         data: dataAgora(),
-        descricao: `Motorista ${motorista.id} atribuído à entrega`,
-      },
+        descricao: `Motorista ${motorista.id} atribuído à entrega`
+      }
     ];
 
-    return this.repository.atualizar(id, {
+    return await this.repository.atualizar(id, {
       motoristaId: motorista.id,
-      historico,
+      historico
     });
   }
 }

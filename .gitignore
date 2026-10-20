@@ -2,3 +2,12 @@ node_modules/
 npm-debug.log*
 .env
 .DS_Store
+
+# Banco de dados SQLite
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+
+# Arquivos temporarios
+*.log

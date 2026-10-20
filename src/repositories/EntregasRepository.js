@@ -1,37 +1,76 @@
-const TABELA = "entregas";
-
 export class EntregasRepository {
-  constructor(database) {
-    this.database = database;
+  constructor(prisma) {
+    this.prisma = prisma;
   }
 
-  listarTodos(filtros = {}) {
-    let entregas = this.database.listar(TABELA);
-
-    if (filtros.status) {
-      entregas = entregas.filter(
-        (entrega) => entrega.status === filtros.status,
-      );
-    }
-
-    if (filtros.motoristaId !== undefined) {
-      entregas = entregas.filter(
-        (entrega) => entrega.motoristaId === filtros.motoristaId,
-      );
-    }
-
-    return entregas;
+  async listarTodos(filtros = {}) {
+    return await this.prisma.entrega.findMany({
+      where: filtros,
+      include: {
+        historico: {
+          orderBy: { id: "asc" }
+        }
+      }
+    });
   }
 
-  buscarPorId(id) {
-    return this.database.porId(TABELA, id) || null;
+  async buscarPorId(id) {
+    return await this.prisma.entrega.findUnique({
+      where: { id: id },
+      include: {
+        historico: {
+          orderBy: { id: "asc" }
+        }
+      }
+    });
   }
 
-  criar(dados) {
-    return this.database.adicionar(TABELA, dados);
+  async criar(dados) {
+    const { historico, ...entrega } = dados;
+
+    return await this.prisma.entrega.create({
+      data: {
+        ...entrega,
+        historico: {
+          create: historico.map((evento) => ({
+            data: evento.data,
+            descricao: evento.descricao
+          }))
+        }
+      },
+      include: {
+        historico: {
+          orderBy: { id: "asc" }
+        }
+      }
+    });
   }
 
-  atualizar(id, dados) {
-    return this.database.alterar(TABELA, id, dados);
+  async atualizar(id, dados) {
+    const { historico, ...entrega } = dados;
+
+    return await this.prisma.entrega.update({
+      where: { id: id },
+
+      data: {
+        ...entrega,
+
+        ...(historico && {
+          historico: {
+            deleteMany: {},
+            create: historico.map((evento) => ({
+              data: evento.data,
+              descricao: evento.descricao
+            }))
+          }
+        })
+      },
+
+      include: {
+        historico: {
+          orderBy: { id: "asc" }
+        }
+      }
+    });
   }
 }

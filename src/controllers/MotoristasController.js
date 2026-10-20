@@ -1,28 +1,24 @@
 class MotoristasController {
   constructor(service) {
-    this.service = service;
+  this.service = service;
 
-    this.listar = this.listar.bind(this);
-    this.buscar = this.buscar.bind(this);
-    this.criar = this.criar.bind(this);
-    this.listarEntregas = this.listarEntregas.bind(this);
+  this.listar = this.listar.bind(this);
+  this.buscar = this.buscar.bind(this);
+  this.criar = this.criar.bind(this);
+  this.listarEntregas = this.listarEntregas.bind(this);
+}
+
+  erro(res, erro) {
+    const status = erro.status || 500;
+
+    return res.status(status).json({
+      erro: erro.message
+    });
   }
 
-  listarEntregas(req, res) {
+  async listar(req, res) {
     try {
-      const id = Number(req.params.id);
-      const status = req.query.status;
-
-      const entregas = this.service.listarEntregas(id, status);
-
-      return res.status(200).json(entregas);
-    } catch (erro) {
-      return this.erro(res, erro);
-    }
-  }
-  listar(req, res) {
-    try {
-      const motoristas = this.service.listar();
+      const motoristas = await this.service.listar();
 
       return res.status(200).json(motoristas);
     } catch (erro) {
@@ -30,10 +26,10 @@ class MotoristasController {
     }
   }
 
-  buscar(req, res) {
+  async buscar(req, res) {
     try {
       const id = Number(req.params.id);
-      const motorista = this.service.buscar(id);
+      const motorista = await this.service.buscar(id);
 
       return res.status(200).json(motorista);
     } catch (erro) {
@@ -41,9 +37,9 @@ class MotoristasController {
     }
   }
 
-  criar(req, res) {
+  async criar(req, res) {
     try {
-      const motorista = this.service.criar(req.body);
+      const motorista = await this.service.criar(req.body);
 
       return res.status(201).json(motorista);
     } catch (erro) {
@@ -51,12 +47,17 @@ class MotoristasController {
     }
   }
 
-  erro(res, erro) {
-    const status = erro.status || 500;
+  async listarEntregas(req, res) {
+    try {
+      const id = Number(req.params.id);
+      const status = req.query.status;
 
-    return res.status(status).json({
-      erro: erro.message || "erro interno",
-    });
+      const entregas = await this.service.listarEntregas(id, status);
+
+      return res.status(200).json(entregas);
+    } catch (erro) {
+      return this.erro(res, erro);
+    }
   }
 }
 

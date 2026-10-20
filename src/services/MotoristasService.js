@@ -6,12 +6,12 @@ class MotoristasService {
     this.entregasRepository = entregasRepository;
   }
 
-  listar() {
-    return this.motoristasRepository.listarTodos();
+  async listar() {
+    return await this.motoristasRepository.listarTodos();
   }
 
-  buscar(id) {
-    const motorista = this.motoristasRepository.buscarPorId(id);
+  async buscar(id) {
+    const motorista = await this.motoristasRepository.buscarPorId(id);
 
     if (!motorista) {
       throw new RegraNegocioError(404, "motorista não encontrado");
@@ -20,37 +20,38 @@ class MotoristasService {
     return motorista;
   }
 
-  criar({ nome, cpf, placaVeiculo }) {
+  async criar({ nome, cpf, placaVeiculo }) {
     if (!nome || !cpf) {
       throw new RegraNegocioError(400, "nome e cpf são obrigatórios");
     }
 
-    const motoristaExistente = this.motoristasRepository.buscarPorCpf(cpf);
+    const motoristaExistente =
+      await this.motoristasRepository.buscarPorCpf(cpf);
 
     if (motoristaExistente) {
       throw new RegraNegocioError(409, "cpf já cadastrado");
     }
 
-    return this.motoristasRepository.criar({
+    return await this.motoristasRepository.criar({
       nome,
       cpf,
       placaVeiculo,
-      status: "ATIVO",
+      status: "ATIVO"
     });
   }
 
-  listarEntregas(id, status) {
-    this.buscar(id);
+  async listarEntregas(id, status) {
+    await this.buscar(id);
 
     const filtros = {
-      motoristaId: id,
+      motoristaId: id
     };
 
     if (status) {
       filtros.status = status;
     }
 
-    return this.entregasRepository.listarTodos(filtros);
+    return await this.entregasRepository.listarTodos(filtros);
   }
 }
 
