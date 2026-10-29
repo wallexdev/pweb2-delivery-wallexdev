@@ -1,0 +1,47 @@
+<section class="page-header">
+    <div>
+        <h2>Motoristas</h2>
+        <p>Consulte e gerencie os motoristas cadastrados.</p>
+    </div>
+
+    <a href="/motoristas/novo" class="btn btn-primary">
+        + Novo Motorista
+    </a>
+</section>
+
+<div class="card">
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Nome</th>
+                <th>CPF</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            <% if (motoristas.length > 0) { %>
+  <% motoristas.forEach((motorista) => { %>
+    <tr>
+      <td><%= motorista.id %></td>
+      <td><%= motorista.nome %></td>
+      <td><%= motorista.cpf %></td>
+      <td>
+        <a
+          href="/motoristas/<%= motorista.id %>"
+          class="btn btn-secondary"
+        >
+          Detalhes
+        </a>
+      </td>
+    </tr>
+  <% }); %>
+<% } else { %>
+  <tr>
+    <td colspan="4">Nenhum motorista cadastrado.</td>
+  </tr>
+<% } %>
+        </tbody>
+    </table>
+</div>

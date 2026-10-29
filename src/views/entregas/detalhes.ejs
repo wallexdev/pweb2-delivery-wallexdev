@@ -1,0 +1,86 @@
+<section class="page-header">
+    <div>
+        <h2>Detalhes da Entrega</h2>
+        <p>Consulte as informações e acompanhe o andamento da entrega.</p>
+    </div>
+
+    <a href="/entregas" class="btn btn-secondary">
+        Voltar
+    </a>
+</section>
+
+<div class="card">
+    <h3>Informações da entrega</h3>
+
+    <div class="delivery-info">
+        <p><strong>ID:</strong> <%= entrega.id %></p>
+        <p><strong>Descrição:</strong> <%= entrega.descricao %></p>
+        <p><strong>Origem:</strong> <%= entrega.origem %></p>
+        <p><strong>Destino:</strong> <%= entrega.destino %></p>
+        <p><strong>Status:</strong> <%= entrega.status %></p>
+    </div>
+</div>
+
+<div class="card">
+    <h3>Ações da entrega</h3>
+
+    <% if (entrega.status === "CRIADA" || entrega.status === "EM_TRANSITO") { %>
+        <form action="/entregas/<%= entrega.id %>/avancar?_method=PATCH" method="POST">
+            <button type="submit" class="btn btn-primary">
+                Avançar status
+            </button>
+        </form>
+    <% } %>
+
+    <% if (entrega.status !== "ENTREGUE" && entrega.status !== "CANCELADA") { %>
+        <form action="/entregas/<%= entrega.id %>/cancelar?_method=PATCH" method="POST">
+            <button type="submit" class="btn btn-secondary">
+                Cancelar entrega
+            </button>
+        </form>
+    <% } %>
+    <% if (entrega.status === "CRIADA") { %>
+    <form action="/entregas/<%= entrega.id %>/atribuir?_method=PATCH" method="POST">
+        <label for="motoristaId">Atribuir motorista:</label>
+
+        <select name="motoristaId" id="motoristaId" required>
+            <option value="">Selecione um motorista</option>
+
+            <% motoristas.filter(motorista => motorista.status === "ATIVO").forEach(motorista => { %>
+                <option value="<%= motorista.id %>">
+                    <%= motorista.nome %> — <%= motorista.cpf %>
+                </option>
+            <% }) %>
+        </select>
+
+        <button type="submit" class="btn btn-primary">
+            Atribuir motorista
+        </button>
+    </form>
+<% } %>
+
+    
+</div>
+
+<div class="card history-card">
+    <h3>Histórico da entrega</h3>
+
+    <% if (entrega.historico && entrega.historico.length > 0) { %>
+        <div class="history-list">
+            <% entrega.historico.forEach(evento => { %>
+                <div class="history-item">
+                    <div class="history-marker"></div>
+
+                    <div class="history-content">
+                        <p><strong><%= evento.descricao %></strong></p>
+                        <small>
+                            <%= new Date(evento.data).toLocaleString("pt-BR") %>
+                        </small>
+                    </div>
+                </div>
+            <% }) %>
+        </div>
+    <% } else { %>
+        <p>Nenhum evento registrado para esta entrega.</p>
+    <% } %>
+</div>
