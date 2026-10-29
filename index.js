@@ -66,6 +66,9 @@ const entregasWebController = new EntregasWebController(
 );
 const motoristasController = new MotoristasController(motoristasService);
 const motoristasWebController = new MotoristasWebController(motoristasService);
+app.get("/", (req, res) => {
+  res.redirect("/entregas");
+});
 app.get("/api/health", (req, res) => res.status(200).json({ status: "ok" }));
 app.use("/api", criarEntregasRouter(entregasController));
 app.use("/api", criarMotoristasRouter(motoristasController));

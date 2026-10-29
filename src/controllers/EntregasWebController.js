@@ -24,8 +24,11 @@ export class EntregasWebController {
   }
 
   nova(req, res) {
-    return res.render("entregas/nova");
-  }
+  return res.render("entregas/nova", {
+    erros: [],
+    dados: {},
+  });
+}
 
   async criar(req, res) {
     try {
